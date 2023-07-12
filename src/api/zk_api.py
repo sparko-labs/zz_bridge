@@ -5,14 +5,18 @@ _client: ZK | None = None
 
 class ZkAPI:
     def __init__(self, **kwargs):
-        global _client
-        if _client is None:
-            _client = ZK(**kwargs)
+        try:
+            global _client
+            if _client is None:
+                _client = ZK(**kwargs)
 
-        _client.connect()
-        _client.read_sizes()
+            _client.connect()
+            _client.read_sizes()
 
-        self.client = _client
+            self.client = _client
+        except Exception as ex:
+            _client = None
+            raise Exception(ex)
 
     def get_users(self):
         return self.client.get_users()
@@ -40,3 +44,6 @@ class ZkAPI:
 
     def del_users(self):
         self.client.clear_data()
+
+    def capture_finger_index(self, user):
+        self.client.enroll_user(user.uid)

@@ -15,10 +15,10 @@ from flet import (
     AppBar,
     ScrollMode
 )
-from ..api import ZkAPI
+from ..api import ZkAPI, SparkoAPI
 from .home import Home
 
-from ..services import UsersService,AttendanceService
+from ..services import UsersService, AttendanceService
 
 
 class Connector(UserControl):
@@ -37,7 +37,7 @@ class Connector(UserControl):
             'verbose': False,
             'password': 0,
             'encoding': 'UTF-8',
-            'ip': '192.168.1.33',
+            'ip': '192.168.1.28',
             'port': '4370'
         }
         self.page = page
@@ -96,24 +96,27 @@ class Connector(UserControl):
             self._state['port'] = int(self.port.value)
 
             zk_api = ZkAPI(**self._state)
+            sparko_api = SparkoAPI()
 
-            self.page.snack_bar = SnackBar(Text("Connected to " + self.ip.value), bgcolor=colors.GREEN_900, duration=1500)
+            self.page.snack_bar = SnackBar(Text("Connected to " + self.ip.value), bgcolor=colors.GREEN_900,
+                                           duration=1500)
             self.page.snack_bar.open = True
             self.page.update()
 
-            self.dashboard(UsersService(zk_api),AttendanceService(zk_api))
+            self.dashboard(UsersService(zk_api, sparko_api), AttendanceService(zk_api, sparko_api))
 
         except Exception as ex:
-            self.page.snack_bar = SnackBar(Text("Unable to connect: " + repr(ex)), bgcolor=colors.RED_900, duration=1500)
+            self.page.snack_bar = SnackBar(Text("Unable to connect: " + repr(ex)), bgcolor=colors.RED_900,
+                                           duration=1500)
             self.page.snack_bar.open = True
             self.page.update()
             self.btn.disabled = False
             self.btn.text = 'Connect'
             self.update()
 
-    def dashboard(self, users_service,attendance_service):
+    def dashboard(self, users_service, attendance_service):
         try:
-            home = Home(self.page, users_service,attendance_service)
+            home = Home(self.page, users_service, attendance_service)
             appbar = AppBar(
                 title=Text("ZZ Bridge"),
                 center_title=True,
