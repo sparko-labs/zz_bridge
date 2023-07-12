@@ -25,6 +25,7 @@ class Home(UserControl):
             attendance_service
     ):
         super().__init__()
+        self.clear_attendance_btn = None
         self.no_attendance = None
         self.no_users = None
         self.sync_attendance_btn = None
@@ -36,6 +37,7 @@ class Home(UserControl):
         self.page = page
         self.users_service = users_service
         self.attendance_service = attendance_service
+        self.capture_buttons = []
 
     def build(self):
 
@@ -47,6 +49,8 @@ class Home(UserControl):
 
         self.sync_user_btn = FilledButton(text="Re-Sync", on_click=self.sync_users)
         self.sync_attendance_btn = FilledButton(text="Re-Sync", on_click=self.sync_attendances)
+
+        self.clear_attendance_btn = FilledButton(text="Clear Attendance", on_click=self.clear_attendance)
 
         self.build_user_table()
         self.build_attendance_table()
@@ -78,6 +82,7 @@ class Home(UserControl):
                         Text('Attendance'),
                         Row(
                             controls=[
+                                self.clear_attendance_btn,
                                 self.sync_attendance_btn,
                                 self.build_attendance_btn
                             ])
@@ -99,12 +104,19 @@ class Home(UserControl):
         users = self.users_service.get_device_users()
         data_rows = []
         if len(users) <= 0:
+            self.no_users.controls = []
             self.no_users.controls.append(Text('No Users', text_align=TextAlign.CENTER))
         else:
             self.no_users.controls = []
 
         for i in range(len(users)):
-            btn = FilledButton(text="Capture Finger", on_click=lambda event, user=users[i]: self.capture_finger(event, user))
+            has_finger = self.users_service.get_finger(users[i])
+            if has_finger:
+                btn = Text('Finger Registered')
+            else:
+                btn = FilledButton(text="Capture Finger",
+                                   on_click=lambda event, user=users[i]: self.capture_finger(event, user))
+            self.capture_buttons.append({'user': users[i].user_id, 'button': btn})
             data_rows.append(DataRow(
                 cells=[
                     DataCell(Text(users[i].user_id)),
@@ -133,6 +145,7 @@ class Home(UserControl):
         attendance = self.attendance_service.get_device_attendance()
         data_rows = []
         if len(attendance) <= 0:
+            self.no_attendance.controls = []
             self.no_attendance.controls.append(Text('No Attendances', text_align=TextAlign.CENTER))
         else:
             self.no_attendance.controls = []
@@ -163,35 +176,34 @@ class Home(UserControl):
         )
 
     def fetch_users(self, e):
-        print(e)
         self.build_user_btn.disabled = True
-        self.build_user_btn.Text = 'Fetching...'
+        self.build_user_btn.text = 'Fetching...'
         self.update()
         self.user_table.rows = self.user_table_rows()
         self.update()
         self.build_user_btn.disabled = False
-        self.build_user_btn.Text = 'Re-Fetch'
+        self.build_user_btn.text = 'Re-Fetch'
         self.update()
 
     def fetch_attendance(self, e):
         self.build_attendance_btn.disabled = True
-        self.build_attendance_btn.Text = 'Fetching...'
+        self.build_attendance_btn.text = 'Fetching...'
         self.update()
         self.attendance_table.rows = self.attendance_table_rows()
         self.update()
         self.build_attendance_btn.disabled = False
-        self.build_attendance_btn.Text = 'Re-Fetch'
+        self.build_attendance_btn.text = 'Re-Fetch'
         self.update()
 
     def sync_users(self, e):
         try:
             self.sync_user_btn.disabled = True
-            self.sync_user_btn.Text = 'Syncing...'
+            self.sync_user_btn.text = 'Syncing...'
             self.update()
             self.users_service.sync_to_device()
             self.fetch_users(None)
             self.sync_user_btn.disabled = False
-            self.sync_user_btn.Text = 'Re-Sync'
+            self.sync_user_btn.text = 'Re-Sync'
             self.update()
             self.page.snack_bar = SnackBar(Text("Users synced"), bgcolor=colors.GREEN_900,
                                            duration=1500)
@@ -202,16 +214,19 @@ class Home(UserControl):
             self.page.snack_bar = SnackBar(Text("Error: " + repr(err)), bgcolor=colors.RED_900)
             self.page.snack_bar.open = True
             self.page.update()
+            self.sync_user_btn.disabled = False
+            self.sync_user_btn.text = 'Re-Sync'
+            self.update()
 
     def sync_attendances(self, e):
         try:
             self.sync_attendance_btn.disabled = True
-            self.sync_attendance_btn.Text = 'Syncing...'
+            self.sync_attendance_btn.text = 'Syncing...'
             self.update()
             self.attendance_service.sync_to_sparko()
             self.fetch_attendance(None)
             self.sync_attendance_btn.disabled = False
-            self.sync_attendance_btn.Text = 'Re-Sync'
+            self.sync_attendance_btn.text = 'Re-Sync'
             self.update()
             self.page.snack_bar = SnackBar(Text("Attendance synced"), bgcolor=colors.GREEN_900,
                                            duration=1500)
@@ -222,12 +237,39 @@ class Home(UserControl):
             self.page.snack_bar = SnackBar(Text("Error: " + repr(err)), bgcolor=colors.RED_900)
             self.page.snack_bar.open = True
             self.page.update()
+            self.sync_attendance_btn.disabled = False
+            self.sync_attendance_btn.text = 'Re-Sync'
+            self.update()
 
     def capture_finger(self, e, user):
-        print('delete user')
-        print(user)
-        print(user.uid)
+        global btn
         try:
+            btn = next((x for x in self.capture_buttons if x['user'] == user.user_id), None)
+            btn['button'].text = 'Capturing...'
+            btn['button'].disabled = True
+            btn['button'].update()
             self.users_service.capture_finger(user)
+            btn['button'].text = 'Capture Finger'
+            btn['button'].update()
+            self.page.snack_bar = SnackBar(Text("Finger Registered"), bgcolor=colors.GREEN_900,
+                                           duration=1500)
+            self.page.snack_bar.open = True
+            self.page.update()
+            self.fetch_users(None)
+
+        except Exception as ex:
+            print(ex)
+            btn['button'].text = 'Capture Finger'
+            btn['button'].disabled = False
+            btn['button'].update()
+            self.page.snack_bar = SnackBar(Text("Error: " + repr(ex)), bgcolor=colors.RED_900)
+            self.page.snack_bar.open = True
+            self.page.update()
+
+    def clear_attendance(self, e):
+        try:
+            self.attendance_service.clear_attendance()
+            self.fetch_attendance(None)
+
         except Exception as ex:
             print(ex)

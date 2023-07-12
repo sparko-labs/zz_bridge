@@ -19,12 +19,16 @@ class AttendanceService:
         for attendance in attendances:
             try:
                 self.sparko_api.post_attendance({
-                    'dateTime': attendance.timestamp,
-                    'ssn': attendance.user_id,
+                    'punchTime': str(attendance.timestamp),
+                    'index': attendance.user_id,
                     'punch': attendance.punch,
                 })
             except Exception as err:
                 print(err)
+                raise Exception(err)
+        # self.zk_api.clear_attendance()
+
+    def clear_attendance(self):
         self.zk_api.clear_attendance()
 
     @staticmethod

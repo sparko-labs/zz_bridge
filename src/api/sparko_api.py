@@ -3,6 +3,7 @@ import os
 import webbrowser
 
 import requests
+from datetime import datetime
 
 
 def find(arr, ele):
@@ -15,7 +16,7 @@ def find(arr, ele):
 class SparkoAPI:
 
     def __init__(self):
-        self.base_url = 'http://192.168.1.32:8080/'
+        self.base_url = 'http://192.168.1.33:8080/'
 
     def fetch_employees(self):
         try:
@@ -24,7 +25,7 @@ class SparkoAPI:
             result = []
             for member in members:
                 res = {
-                    'user_id': member['ssn'],
+                    'user_id': member['index'],
                     'name': member['user']['firstName'] + ' ' + member['user']['lastName'],
                 }
                 result.append(res)
@@ -38,15 +39,16 @@ class SparkoAPI:
         try:
 
             url = self.base_url + "attendances"
-
+            data["punchTime"] = datetime.strptime(data["punchTime"], "%Y-%m-%d %H:%M:%S").strftime("%Y-%m-%dT%H:%M:%SZ")
             payload = json.dumps(data)
             headers = {
                 'Content-Type': 'application/json'
             }
-
             response = requests.request("POST", url, headers=headers, data=payload)
 
             print(response.text)
 
+            # if response.status_code != 200:
+            #     raise Exception(response.text)
         except Exception as err:
             raise Exception(err)

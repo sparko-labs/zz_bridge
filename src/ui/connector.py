@@ -37,7 +37,7 @@ class Connector(UserControl):
             'verbose': False,
             'password': 0,
             'encoding': 'UTF-8',
-            'ip': '192.168.1.28',
+            'ip': '192.168.1.29',
             'port': '4370'
         }
         self.page = page

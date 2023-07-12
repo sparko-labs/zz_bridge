@@ -46,4 +46,18 @@ class ZkAPI:
         self.client.clear_data()
 
     def capture_finger_index(self, user):
-        self.client.enroll_user(user.uid)
+        try:
+            enroll = self.client.enroll_user(uid=user.uid, user_id=user.user_id)
+            print(enroll)
+            return enroll
+        except Exception as err:
+            print(err)
+            raise Exception(err)
+
+    def get_finger(self, user):
+        try:
+            template = self.client.get_user_template(uid=user.uid)
+            return template
+        except Exception as err:
+            print(err)
+            raise Exception(err)
