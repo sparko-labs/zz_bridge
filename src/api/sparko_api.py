@@ -16,7 +16,7 @@ def find(arr, ele):
 class SparkoAPI:
 
     def __init__(self):
-        self.base_url = 'http://192.168.1.33:8080/'
+        self.base_url = 'http://localhost:8080/'
 
     def fetch_employees(self):
         try:
@@ -25,7 +25,7 @@ class SparkoAPI:
             result = []
             for member in members:
                 res = {
-                    'user_id': member['index'],
+                    'user_id': member['identifier'],
                     'name': member['user']['firstName'] + ' ' + member['user']['lastName'],
                 }
                 result.append(res)

@@ -20,7 +20,7 @@ class AttendanceService:
             try:
                 self.sparko_api.post_attendance({
                     'punchTime': str(attendance.timestamp),
-                    'index': attendance.user_id,
+                    'identifier': attendance.user_id,
                     'punch': attendance.punch,
                 })
             except Exception as err:
