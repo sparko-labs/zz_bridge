@@ -16,7 +16,8 @@ def find(arr, ele):
 class SparkoAPI:
 
     def __init__(self):
-        self.base_url = 'http://localhost:8080/'
+        # self.base_url = 'http://192.168.1.36:8080/'
+        self.base_url = 'https://api-hrms.sparkosol.com/'
 
     def fetch_employees(self):
         try:

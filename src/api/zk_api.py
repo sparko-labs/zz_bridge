@@ -48,10 +48,8 @@ class ZkAPI:
     def capture_finger_index(self, user):
         try:
             enroll = self.client.enroll_user(uid=user.uid, user_id=user.user_id)
-            print(enroll)
             return enroll
         except Exception as err:
-            print(err)
             raise Exception(err)
 
     def get_finger(self, user):

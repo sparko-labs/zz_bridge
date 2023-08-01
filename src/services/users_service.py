@@ -14,7 +14,6 @@ class UsersService:
             raw_employees = self.sparko_api.fetch_employees()
             device_users = self.zk_api.get_users()
             for x in raw_employees:
-                print(x)
                 if self.check_user_device(device_users, x['user_id']):
                     continue
 
@@ -35,7 +34,6 @@ class UsersService:
         try:
             return self.zk_api.capture_finger_index(user)
         except Exception as err:
-            print(err)
             raise Exception(err)
 
     def get_finger(self, user):

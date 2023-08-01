@@ -101,6 +101,7 @@ class Home(UserControl):
             return 'Check Out'
 
     def user_table_rows(self):
+        self.capture_buttons = []
         users = self.users_service.get_device_users()
         data_rows = []
         if len(users) <= 0:
@@ -112,16 +113,18 @@ class Home(UserControl):
         for i in range(len(users)):
             has_finger = self.users_service.get_finger(users[i])
             if has_finger:
-                btn = Text('Finger Registered')
+                text = "Finger Registered"
+                finger_btn = Text(text)
             else:
-                btn = FilledButton(text="Capture Finger",
-                                   on_click=lambda event, user=users[i]: self.capture_finger(event, user))
-            self.capture_buttons.append({'user': users[i].user_id, 'button': btn})
+                text = "Capture Finger"
+                finger_btn = FilledButton(text=text,
+                                          on_click=lambda event, user=users[i]: self.capture_finger(event, user))
+                self.capture_buttons.append({'user': users[i].user_id, 'button': finger_btn})
             data_rows.append(DataRow(
                 cells=[
                     DataCell(Text(users[i].user_id)),
                     DataCell(Text(users[i].name)),
-                    DataCell(btn),
+                    DataCell(finger_btn),
                 ],
             ), )
 
@@ -244,13 +247,12 @@ class Home(UserControl):
     def capture_finger(self, e, user):
         global btn
         try:
+            btn = None
             btn = next((x for x in self.capture_buttons if x['user'] == user.user_id), None)
             btn['button'].text = 'Capturing...'
             btn['button'].disabled = True
             btn['button'].update()
             self.users_service.capture_finger(user)
-            btn['button'].text = 'Capture Finger'
-            btn['button'].update()
             self.page.snack_bar = SnackBar(Text("Finger Registered"), bgcolor=colors.GREEN_900,
                                            duration=1500)
             self.page.snack_bar.open = True
@@ -265,6 +267,7 @@ class Home(UserControl):
             self.page.snack_bar = SnackBar(Text("Error: " + repr(ex)), bgcolor=colors.RED_900)
             self.page.snack_bar.open = True
             self.page.update()
+            self.fetch_users(None)
 
     def clear_attendance(self, e):
         try:
