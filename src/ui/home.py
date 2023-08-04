@@ -99,6 +99,14 @@ class Home(UserControl):
             return 'Check In'
         elif status == 1:
             return 'Check Out'
+        elif status == 2:
+            return 'Break Out'
+        elif status == 3:
+            return 'Break In'
+        elif status == 4:
+            return 'Overtime In'
+        elif status == 5:
+            return 'Overtime Out'
 
     def user_table_rows(self):
         self.capture_buttons = []
