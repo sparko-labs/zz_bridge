@@ -1,6 +1,7 @@
 import json
-import os
-import webbrowser
+# import logging
+# import os
+# import webbrowser
 
 import requests
 from datetime import datetime
@@ -13,14 +14,19 @@ def find(arr, ele):
     return None
 
 
+# logging.basicConfig(level=logging.DEBUG)
+
+
 class SparkoAPI:
 
     def __init__(self):
-        # self.base_url = 'http://192.168.1.36:8080/'
-        self.base_url = 'https://api-hrms.sparkosol.com/'
+        self.base_url = 'http://139.59.248.64:8080/'
+        # self.base_url = 'https://api-hrms.sparkosol.com/'
 
     def fetch_employees(self):
         try:
+            # res = session.get(self.base_url + 'members?page=1&limit=10000', verify=True,
+            #                   headers={'Connection': 'close'}, timeout=30, stream=True)
             res = requests.get(self.base_url + 'members?page=1&limit=10000')
             members = json.loads(res.text)['data']
             result = []
